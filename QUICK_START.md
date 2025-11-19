@@ -78,7 +78,10 @@ node test-system.js
 A: 检查端口3000和5173是否被占用，确保Node.js版本 >= 16
 
 ### Q: 忘记管理员密码？
-A: 运行 `node server/scripts/init-admin.js` 重置
+A: 运行 `node server/scripts/fix-admin-password.js` 重置
+
+### Q: 默认管理员无法登录？
+A: 运行 `node server/scripts/fix-admin-password.js` 修复密码哈希
 
 ### Q: 如何修改JWT密钥？
 A: 编辑 `.env` 文件中的 `JWT_SECRET`

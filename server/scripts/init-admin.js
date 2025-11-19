@@ -16,24 +16,31 @@ async function createAdminAccount() {
     // 哈希密码
     const passwordHash = await bcrypt.hash(adminData.password, 10);
     
-    // 创建管理员账户
-    const result = await database.run(
-      `INSERT INTO Members (group_id, name, position, email_private, password_hash, is_admin) 
-       VALUES (1, ?, ?, ?, ?, 1)`,
-      [adminData.name, adminData.position, adminData.email_private, passwordHash]
+    // 先尝试更新现有管理员账户
+    const updateResult = await database.run(
+      'UPDATE Members SET password_hash = ? WHERE email_private = ?',
+      [passwordHash, adminData.email_private]
     );
     
-    console.log('管理员账户创建成功!');
+    if (updateResult.changes > 0) {
+      console.log('✅ 管理员密码已更新成功！');
+    } else {
+      // 如果没有现有账户，创建一个新的
+      const result = await database.run(
+        `INSERT INTO Members (group_id, name, position, email_private, password_hash, is_admin) 
+         VALUES (1, ?, ?, ?, ?, 1)`,
+        [adminData.name, adminData.position, adminData.email_private, passwordHash]
+      );
+      
+      console.log('✅ 管理员账户创建成功！');
+    }
+    
     console.log('邮箱: admin@team.com');
     console.log('密码: admin123');
     console.log('登录地址: http://localhost:3000/secret-login');
     
   } catch (error) {
-    if (error.code === 'SQLITE_CONSTRAINT') {
-      console.log('管理员账户已存在');
-    } else {
-      console.error('创建管理员账户失败:', error);
-    }
+    console.error('设置管理员账户失败:', error);
   } finally {
     database.close();
   }

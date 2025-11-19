@@ -205,6 +205,12 @@ A: 修改 `.env` 文件中的 `JWT_SECRET` 值，重启服务器即可。
 ### Q: 数据库文件在哪里？
 A: 默认位置是 `database/team.db`，可通过环境变量 `DB_PATH` 修改。
 
+### Q: 遇到路径别名错误怎么办？
+A: 请参考 [故障排除指南](./TROUBLESHOOTING.md) 获取详细解决方案。
+
+### Q: 前端构建失败怎么办？
+A: 运行 `node test-frontend.js` 进行诊断，或查看故障排除指南。
+
 ## 许可证
 
 MIT License
