@@ -38,9 +38,10 @@
             >
               <div class="text-center">
                 <img 
-                  :src="member.photo_url || 'https://via.placeholder.com/80x80?text=Avatar'" 
+                  :src="getAvatarUrl(member)" 
                   :alt="member.name"
                   class="member-avatar"
+                  @error="handleImageError"
                 />
                 <div class="member-name">{{ member.name }}</div>
                 <div class="member-position">{{ member.position }}</div>
@@ -97,6 +98,23 @@ const goToMember = (memberId) => {
 const truncateText = (text, maxLength) => {
   if (!text) return ''
   return text.length > maxLength ? text.substring(0, maxLength) + '...' : text
+}
+
+// 获取头像URL
+const getAvatarUrl = (member) => {
+  if (member.photo_filename) {
+    return `/api/upload/avatar/${member.photo_filename}`
+  }
+  if (member.photo_url) {
+    return member.photo_url
+  }
+  return 'https://via.placeholder.com/80x80?text=Avatar'
+}
+
+// 处理图片加载错误
+const handleImageError = (event) => {
+  // 设置默认占位符
+  event.target.src = 'https://via.placeholder.com/80x80?text=Avatar'
 }
 
 // 退出登录

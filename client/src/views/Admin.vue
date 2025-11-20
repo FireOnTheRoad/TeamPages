@@ -31,7 +31,7 @@
       <div v-if="activeTab === 'members'" class="admin-section">
         <div class="section-header">
           <h2>成员管理</h2>
-          <button @click="showAddMemberModal = true" class="btn btn-primary">
+          <button @click="showMemberModal = true" class="btn btn-primary">
             添加成员
           </button>
         </div>
@@ -85,7 +85,7 @@
       <div v-if="activeTab === 'groups'" class="admin-section">
         <div class="section-header">
           <h2>分组管理</h2>
-          <button @click="showAddGroupModal = true" class="btn btn-primary">
+          <button @click="showGroupModal = true" class="btn btn-primary">
             添加分组
           </button>
         </div>
@@ -143,8 +143,48 @@
           </div>
           
           <div class="form-group">
-            <label class="form-label">头像URL</label>
-            <input v-model="memberForm.photo_url" class="form-control" />
+            <label class="form-label">头像</label>
+            <div class="avatar-upload">
+              <!-- 当前头像预览 -->
+              <div class="avatar-preview">
+                <img 
+                  v-if="getAvatarUrl(memberForm)" 
+                  :src="getAvatarUrl(memberForm)" 
+                  alt="头像预览"
+                  class="avatar-img"
+                />
+                <div v-else class="avatar-placeholder">
+                  <span>无头像</span>
+                </div>
+              </div>
+              
+              <!-- 上传控件 -->
+              <div class="upload-controls">
+                <input 
+                  type="file" 
+                  ref="avatarInput"
+                  @change="handleAvatarUpload"
+                  accept="image/*"
+                  class="file-input"
+                />
+                <button 
+                  type="button" 
+                  @click="$refs.avatarInput?.click()"
+                  class="btn btn-secondary"
+                  :disabled="uploading"
+                >
+                  {{ uploading ? '上传中...' : '选择头像' }}
+                </button>
+                <button 
+                  v-if="memberForm.photo_filename || memberForm.photo_url"
+                  type="button"
+                  @click="removeAvatar"
+                  class="btn btn-danger"
+                >
+                  删除头像
+                </button>
+              </div>
+            </div>
           </div>
           
           <div class="form-group">
@@ -239,12 +279,16 @@ const memberForm = ref({
   position: '',
   bio: '',
   photo_url: '',
+  photo_filename: '',
   email_public: '',
   email_private: '',
   phone_number: '',
   password: '',
   is_admin: false
 })
+
+// 头像上传相关
+const uploading = ref(false)
 
 // 分组模态框相关
 const showGroupModal = ref(false)
@@ -292,6 +336,7 @@ const editMember = (member) => {
     position: member.position || '',
     bio: member.bio || '',
     photo_url: member.photo_url || '',
+    photo_filename: member.photo_filename || '',
     email_public: member.email_public || '',
     email_private: member.email_private,
     phone_number: member.phone_number || '',
@@ -394,12 +439,75 @@ const closeMemberModal = () => {
     position: '',
     bio: '',
     photo_url: '',
+    photo_filename: '',
     email_public: '',
     email_private: '',
     phone_number: '',
     password: '',
     is_admin: false
   }
+}
+
+// 头像上传相关函数
+const getAvatarUrl = (member) => {
+  if (member.photo_filename) {
+    return `/api/upload/avatar/${member.photo_filename}`
+  }
+  if (member.photo_url) {
+    return member.photo_url
+  }
+  return null
+}
+
+const handleAvatarUpload = async (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+  
+  // 检查文件大小（5MB限制）
+  if (file.size > 5 * 1024 * 1024) {
+    error.value = '图片大小不能超过5MB'
+    return
+  }
+  
+  // 检查文件类型
+  if (!file.type.startsWith('image/')) {
+    error.value = '只能上传图片文件'
+    return
+  }
+  
+  const formData = new FormData()
+  formData.append('avatar', file)
+  
+  try {
+    uploading.value = true
+    const response = await api.post('/upload/avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    
+    memberForm.value.photo_filename = response.data.filename
+    memberForm.value.photo_url = response.data.url
+    error.value = ''
+    console.log('头像上传成功:', response.data)
+    
+  } catch (err) {
+    console.error('头像上传失败:', err)
+    error.value = err.response?.data?.error || '头像上传失败'
+  } finally {
+    uploading.value = false
+  }
+}
+
+const removeAvatar = () => {
+  if (memberForm.value.photo_filename) {
+    // 删除服务器上的文件
+    api.delete(`/upload/avatar/${memberForm.value.photo_filename}`)
+      .catch(err => console.error('删除服务器头像失败:', err))
+  }
+  
+  memberForm.value.photo_filename = ''
+  memberForm.value.photo_url = ''
 }
 
 // 关闭分组模态框
@@ -566,5 +674,54 @@ onMounted(async () => {
 
 .ml-3 {
   margin-left: 1rem;
+}
+
+/* 头像上传样式 */
+.avatar-upload {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.avatar-preview {
+  flex-shrink: 0;
+}
+
+.avatar-img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e9ecef;
+}
+
+.avatar-placeholder {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 2px dashed #e9ecef;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6c757d;
+  font-size: 12px;
+  text-align: center;
+  background-color: #f8f9fa;
+}
+
+.upload-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-grow: 1;
+}
+
+.file-input {
+  display: none;
+}
+
+.upload-controls .btn {
+  align-self: flex-start;
 }
 </style>

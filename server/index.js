@@ -11,10 +11,14 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// 静态文件服务
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 // 路由
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api', require('./routes/members'));
 app.use('/api/admin', require('./routes/admin'));
+app.use('/api/upload', require('./routes/upload'));
 
 // 静态文件服务（用于生产环境）
 app.use(express.static(path.join(__dirname, '../client/dist')));

@@ -129,6 +129,7 @@ router.get('/members', async (req, res) => {
                 m.position,
                 m.bio,
                 m.photo_url,
+                m.photo_filename,
                 m.email_public,
                 m.email_private,
                 m.phone_number,
@@ -153,6 +154,7 @@ router.post('/members', async (req, res) => {
             position, 
             bio, 
             photo_url, 
+            photo_filename,
             email_public, 
             email_private, 
             phone_number, 
@@ -183,16 +185,17 @@ router.post('/members', async (req, res) => {
 
         const result = await database.run(
             `INSERT INTO Members (
-                group_id, name, position, bio, photo_url, 
+                group_id, name, position, bio, photo_url, photo_filename,
                 email_public, email_private, phone_number, 
                 password_hash, is_admin
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 group_id || null,
                 name,
                 position || null,
                 bio || null,
                 photo_url || null,
+                photo_filename || null,
                 email_public || null,
                 email_private,
                 phone_number || null,
@@ -222,6 +225,7 @@ router.put('/members/:id', async (req, res) => {
             position, 
             bio, 
             photo_url, 
+            photo_filename,
             email_public, 
             email_private, 
             phone_number, 

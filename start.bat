@@ -34,9 +34,17 @@ echo 🗄️ 初始化管理员账户...
 node server/scripts/init-admin.js
 
 echo 🌟 启动开发服务器...
-echo 后端服务器: http://localhost:3000
-echo 前端开发服务器: http://localhost:5173
-echo 管理员登录: http://localhost:3000/secret-login
+
+REM 读取实际配置的端口
+if exist ".env" (
+    for /f "tokens=2 delims==" %%a in ('findstr "PORT=" .env') do set BACKEND_PORT=%%a
+) else (
+    set BACKEND_PORT=3000
+)
+
+echo 后端服务器: http://localhost:%BACKEND_PORT%
+echo 前端开发服务器: http://localhost:5173 (或自动分配的端口)
+echo 管理员登录: http://localhost:%BACKEND_PORT%/secret-login
 echo.
 echo 默认管理员账户:
 echo 邮箱: admin@team.com

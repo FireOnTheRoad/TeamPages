@@ -17,9 +17,10 @@
         <div class="member-header d-flex">
           <div class="member-avatar-container">
             <img 
-              :src="member.photo_url || 'https://via.placeholder.com/150x150?text=Avatar'" 
+              :src="getAvatarUrl(member)" 
               :alt="member.name"
               class="member-avatar-large"
+              @error="handleImageError"
             />
           </div>
           
@@ -201,6 +202,23 @@ const updateProfile = async () => {
 // 返回上一页
 const goBack = () => {
   router.push('/')
+}
+
+// 获取头像URL
+const getAvatarUrl = (member) => {
+  if (member.photo_filename) {
+    return `/api/upload/avatar/${member.photo_filename}`
+  }
+  if (member.photo_url) {
+    return member.photo_url
+  }
+  return 'https://via.placeholder.com/150x150?text=Avatar'
+}
+
+// 处理图片加载错误
+const handleImageError = (event) => {
+  // 设置默认占位符
+  event.target.src = 'https://via.placeholder.com/150x150?text=Avatar'
 }
 
 // 监听认证状态变化，重新获取数据
