@@ -46,6 +46,6 @@ INSERT OR IGNORE INTO Members (
     'admin@team.com',
     'admin@team.com',
     '',
-    '$2b$10$rOzJqQjQjQjQjQjQjQjQjOzJqQjQjQjQjQjQjQjQjQjQjQjQjQjQjQ',
+    '$2b$10$8K1O/orWOhlOjnLhk1V8/.3ukOzT8H6XE5l.FdCAzO8SQaBz8xCzO',
     1
 );
