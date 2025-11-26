@@ -30,20 +30,41 @@ class Database {
     }
 
     async initDatabase() {
-        return new Promise((resolve, reject) => {
-            const sqlPath = path.join(__dirname, 'init.sql');
-            const sql = fs.readFileSync(sqlPath, 'utf8');
+        const executeInitScript = () => {
+            return new Promise((resolve, reject) => {
+                const sqlPath = path.join(__dirname, 'init.sql');
+                const sql = fs.readFileSync(sqlPath, 'utf8');
 
-            this.db.exec(sql, (err) => {
-                if (err) {
-                    console.error('数据库初始化失败:', err.message);
-                    reject(err);
-                } else {
-                    console.log('数据库初始化完成');
-                    resolve();
-                }
+                this.db.exec(sql, (err) => {
+                    if (err) {
+                        console.error('数据库初始化失败:', err.message);
+                        reject(err);
+                    } else {
+                        console.log('数据库初始化完成');
+                        resolve();
+                    }
+                });
             });
-        });
+        };
+
+        await executeInitScript();
+        await this.runMigrations();
+    }
+
+    async runMigrations() {
+        try {
+            const tableInfo = await this.query('PRAGMA table_info(Members)');
+            const hasPhotoFilename = tableInfo.some(col => col.name === 'photo_filename');
+
+            if (!hasPhotoFilename) {
+                console.log('检测到缺失字段 photo_filename，正在自动补齐...');
+                await this.run('ALTER TABLE Members ADD COLUMN photo_filename TEXT');
+                console.log('photo_filename 字段添加完成');
+            }
+        } catch (error) {
+            console.error('执行数据库迁移失败:', error.message);
+            throw error;
+        }
     }
 
     async query(sql, params = []) {

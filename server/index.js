@@ -14,11 +14,11 @@ app.use(express.json());
 // 静态文件服务
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// 路由
+// 路由（先注册更具体的前缀，避免被通配路由抢先匹配）
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api', require('./routes/members'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/upload', require('./routes/upload'));
+app.use('/api', require('./routes/members'));
 
 // 静态文件服务（用于生产环境）
 app.use(express.static(path.join(__dirname, '../client/dist')));

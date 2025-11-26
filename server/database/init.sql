@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS Members (
     position TEXT,
     bio TEXT,
     photo_url TEXT,
+    photo_filename TEXT,
     email_public TEXT,
     email_private TEXT,
     phone_number TEXT,
